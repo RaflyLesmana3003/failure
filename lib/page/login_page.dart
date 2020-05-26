@@ -82,9 +82,7 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
                     onPressed: ()  {
                       widget.auth.signIn().whenComplete(() async {
                         
-                          var firebaseUser = await FirebaseAuth.instance.currentUser();
-                          setState(() {});
-                          UserModel().Usercreate(name: firebaseUser.displayName,email: firebaseUser.email);
+                          
                           widget.loginCallback();
                       });
                     },

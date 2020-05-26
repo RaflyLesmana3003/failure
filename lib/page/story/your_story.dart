@@ -1,7 +1,6 @@
 import 'package:failure/model/story.dart';
 import 'package:failure/page/home/story.dart';
 import 'package:failure/page/story/add_story.dart';
-import 'package:failure/page/story/publish.dart';
 import 'package:flutter/material.dart';
 
 class YourStory extends StatefulWidget {

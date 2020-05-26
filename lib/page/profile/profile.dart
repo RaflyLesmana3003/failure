@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:failure/main.dart';
 import 'package:failure/page/root_page.dart';
 import 'package:failure/page/services/authentication.dart';
@@ -14,44 +15,48 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  String email;
-  String name;
-   user() async {
+  String uid;
+  @override
+  void user() async {
     var firebaseUser = await FirebaseAuth.instance.currentUser();
-    setState(() {
-      
-    });
-      email = firebaseUser.email;
-      name = firebaseUser.displayName;
+    if (firebaseUser != null) {
+      setState(() {
+        uid = firebaseUser.uid;
+      });
+    }
   }
 
-  signOut() async {
+  Future signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
-        widget.logoutCallback();
-        
-      
+      widget.logoutCallback();
+
+      setState(() {});
     } catch (e) {
       print(e);
     }
-    
   }
 
   @override
   Widget build(BuildContext context) {
     user();
-    return (name == null)
-        ? CircularProgressIndicator(
-            backgroundColor: Colors.red,
-          )
-        : Container(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(name),
-                RaisedButton(child: Text("data"), onPressed: () => signOut())
-              ],
-            ),
-          );
+    return new StreamBuilder(
+        stream: Firestore.instance.collection('user').document(uid).snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return new CircularProgressIndicator();
+          }
+          var userDocument = snapshot.data;
+          print(userDocument);
+          return new RaisedButton(
+              child: Text(userDocument["anonym"]),
+              onPressed: () {
+                signOut().then((onValue) {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return MyApp();
+                  }));
+                });
+              });
+        });
   }
 }

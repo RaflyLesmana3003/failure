@@ -1,4 +1,5 @@
 
+import 'package:failure/model/user.dart';
 import 'package:failure/page/services/authentication.dart';
 import 'package:flutter/material.dart';
 
@@ -40,6 +41,7 @@ class _RootPageState extends State<RootPage> {
 
   void loginCallback() {
     widget.auth.getCurrentUser().then((user) {
+      UserModel().Usercreate(email: user.email,name: user.displayName,anonymname: 1);
       setState(() {
         _userId = user.uid.toString();
       });
