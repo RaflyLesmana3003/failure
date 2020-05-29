@@ -164,20 +164,24 @@ class _ViewStoryState extends State<ViewStory>
                             child: ConstrainedBox(
                               constraints: BoxConstraints(minHeight: 100),
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
+                                 Text("Story",style: TextStyle(color: Colors.grey),),
                                   ZefyrView(
                                       document: NotusDocument.fromJson(
                                           jsonDecode(storydoc["story"]))),
-                                  SizedBox(
-                                    width: double.infinity,
-                                                                      child: OutlineButton(
-                                      borderSide: BorderSide(color: Colors.pinkAccent[100]),
-                                      color: Colors.pinkAccent[400],
-                                        child: Text("Insight"),
-                                        onPressed: () {
-                                          print("object");
-                                        }),
-                                  )
+                                 Divider(thickness: 2,),
+                                 (storydoc["insight"].toString().length.toInt() < 17)?
+                                 Column(
+                                   crossAxisAlignment: CrossAxisAlignment.start,
+                                   children: <Widget>[
+                                     Text("Insight",style: TextStyle(color: Colors.grey),),
+                                 ZefyrView(
+                                      document: NotusDocument.fromJson(
+                                          jsonDecode(storydoc["insight"])))
+                                   ],
+                                 ):Container()
+                                 
                                 ],
                               ),
                             ),

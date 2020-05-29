@@ -3,12 +3,40 @@ import 'package:failure/page/home/story.dart';
 import 'package:failure/page/story/viewstory.dart';
 import 'package:flutter/material.dart';
 
-class HomePage extends StatefulWidget {
+class SlideRightRoute extends PageRouteBuilder {
+  final Widget page;
+  SlideRightRoute({this.page})
+      : super(
+          pageBuilder: (
+            BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+          ) =>
+              page,
+          transitionsBuilder: (
+            BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+            Widget child,
+          ) =>
+              SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 1),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
+        );
+}
+
+class HomePage extends StatefulWidget{
+  
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  
   @override
   Widget build(BuildContext context) {
 
@@ -49,9 +77,10 @@ class _HomePageState extends State<HomePage> {
     return snapshot.data.documents
         .map((doc) => GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return ViewStory(doc.documentID);
-                }));
+                Navigator.push(context, SlideRightRoute(page:ViewStory(doc.documentID)));
+                // Navigator.push(context, MaterialPageRoute(builder: (context) {
+                //   return 
+                // }));
               },
               child: new Container(
                   margin: EdgeInsets.fromLTRB(0, 10, 0, 0),

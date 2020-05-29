@@ -169,9 +169,10 @@ class _AddStoryState extends State<AddStory>
                     icon: Icon(Icons.navigate_next),
                     onPressed: () {
                       
-                      // _globalKey.currentState.show("这是SnackBar count: ${count++}");
                       if (title.text.length == 0) {
                         _titlefocus.requestFocus();
+                      _globalKey.currentState.show("Title must not be empty");
+
                         return false;
                       }
                       if (_storyzcontroller.document.length == 1) {
@@ -179,6 +180,8 @@ class _AddStoryState extends State<AddStory>
                         setState(() {
                           click = 1;
                         });
+                      _globalKey.currentState.show("Story must not be empty");
+
                         return false;
                       }
                       setState(() {
