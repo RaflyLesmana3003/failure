@@ -35,7 +35,7 @@ class UserModel {
         .document(firebaseUser.uid)
         .get()
         .then((value) async {
-          print(value.data);
+      print(value.data);
       if (value.data == null) {
         await Firestore.instance
             .collection('user')
@@ -52,6 +52,46 @@ class UserModel {
           'photo': (imageurl != null) ? imageurl : null,
         });
       }
+    });
+  }
+
+  Future<String> Userupdate(
+      {String name,
+      String anonymname,
+      int isanonym,
+      String email,
+      String image,
+      File photo}) async {
+    String imageurl;
+    var faker = new Faker();
+
+    if (photo != null) {
+      
+      if (image != null) {
+        StorageReference delref = await FirebaseStorage().getReferenceFromUrl(image);
+      await delref.delete();
+      }
+      String imageName = basename(photo.path);
+      StorageReference ref = FirebaseStorage.instance.ref().child(imageName);
+      StorageUploadTask task = ref.putFile(photo);
+      StorageTaskSnapshot snapshot = await task.onComplete;
+      imageurl = await snapshot.ref.getDownloadURL();
+    }
+    var firebaseUser = await FirebaseAuth.instance.currentUser();
+    var now = new DateTime.now();
+    var formatter = new DateFormat('yyyy-MM-dd');
+    String formatted = formatter.format(now);
+    Firestore.instance
+        .collection("user")
+        .document(firebaseUser.uid)
+        .get()
+        .then((value) {
+      Firestore.instance.collection('user').document(firebaseUser.uid).setData({
+        // 'name': (name != null) ? name : null,
+        // 'email': (email != null) ? email : null,
+        'anonym': (anonymname != null) ? anonymname : null,
+        'photo': (imageurl != null) ? imageurl : image,
+      }, merge: true);
     });
   }
 }

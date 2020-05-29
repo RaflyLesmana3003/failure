@@ -33,10 +33,11 @@ dependencies:
   firebase_database: 
   google_sign_in:
   cloud_firestore: ^0.13.5
-  firebase_storage: ^3.1.5
+  firebase_storage: ^3.1.6
   flutter_snackbar: ^0.0.3
   intl: ^0.16.1
   faker: ^1.2.1
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

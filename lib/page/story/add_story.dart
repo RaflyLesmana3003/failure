@@ -195,8 +195,8 @@ class _AddStoryState extends State<AddStory>
                   )
                 : FloatingActionButton(
                   onPressed: (){},
-                  hoverColor: Colors.pinkAccent,
-                  child: CircularProgressIndicator(backgroundColor: Colors.white),
+                  backgroundColor: Colors.pinkAccent[400],
+                  child: CircularProgressIndicator(backgroundColor: Colors.white,valueColor: new AlwaysStoppedAnimation<Color>(Colors.pinkAccent[700])),
                 )),
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(50),
