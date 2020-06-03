@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:faker/faker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
@@ -37,7 +36,7 @@ class StoryModel {
       'story': (storyjson != null) ? storyjson : null,
       'insight': (insightjson != null) ? insightjson : null,
       'ispublish': true,
-      'created_at': formatted
+      'created_at': formatted, "time": now
     });
 
     return docRef.documentID.toString();

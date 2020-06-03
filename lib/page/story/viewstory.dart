@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:failure/model/comment.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:zefyr/zefyr.dart';
 
@@ -14,9 +16,14 @@ class ViewStory extends StatefulWidget {
 class _ViewStoryState extends State<ViewStory>
     with SingleTickerProviderStateMixin {
   TabController _controller;
+  TextEditingController comment;
+  String _comment;
+
   @override
   void initState() {
     super.initState();
+    comment = new TextEditingController();
+
     _controller = new TabController(length: 2, vsync: this);
   }
 
@@ -37,6 +44,30 @@ class _ViewStoryState extends State<ViewStory>
               ),
             ),
           ),
+        ),
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(),
+          child: FloatingActionButton.extended(
+              label: Text("Comment"),
+              icon: Icon(Icons.add),
+              backgroundColor: Colors.pinkAccent[400],
+              onPressed: () async{
+                if (_comment != null) {
+                  print(_comment);
+
+                  var firebaseUser = await FirebaseAuth.instance.currentUser();
+                  CommentModel()
+                      .CreateComment(
+                          userid: firebaseUser.uid,
+                          comment: comment.text.toString(),
+                          storyid: widget.docid)
+                      .then((value) {
+                    setState(() {
+                      comment.text = "";
+                    });
+                  });
+                }
+              }),
         ),
         body: StreamBuilder(
             stream: Firestore.instance
@@ -166,32 +197,181 @@ class _ViewStoryState extends State<ViewStory>
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                 Text("Story",style: TextStyle(color: Colors.grey),),
+                                  Text(
+                                    "Story",
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
                                   ZefyrView(
                                       document: NotusDocument.fromJson(
                                           jsonDecode(storydoc["story"]))),
-                                 Divider(thickness: 2,),
-                                 (storydoc["insight"].toString().length.toInt() < 17)?
-                                 Column(
-                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                   children: <Widget>[
-                                     Text("Insight",style: TextStyle(color: Colors.grey),),
-                                 ZefyrView(
-                                      document: NotusDocument.fromJson(
-                                          jsonDecode(storydoc["insight"])))
-                                   ],
-                                 ):Container()
-                                 
+                                  (storydoc["insight"]
+                                              .toString()
+                                              .length
+                                              .toInt() <
+                                          17)
+                                      ? Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Divider(
+                                              thickness: 2,
+                                            ),
+                                            Text(
+                                              "Insight",
+                                              style:
+                                                  TextStyle(color: Colors.grey),
+                                            ),
+                                            ZefyrView(
+                                                document: NotusDocument
+                                                    .fromJson(jsonDecode(
+                                                        storydoc["insight"])))
+                                          ],
+                                        )
+                                      : Center()
                                 ],
                               ),
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ),
                   ),
+                  Container(
+                    color: Colors.white,
+                    child: Container(
+                      margin: EdgeInsets.all(10),
+                      child: Column(
+                        ////////
+
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Divider(),
+                          TextFormField(
+                            decoration: const InputDecoration(
+                              hintText: 'Comment:',
+                              labelText: 'Comment:',
+                            ),
+                            autofocus: false,
+                            maxLines: null,
+                            controller: comment,
+                            keyboardType: TextInputType.text,
+                            onChanged: (value) {
+                              setState(() {
+                                _comment = value;
+                              });
+                            },
+                          ),
+                          Divider(),
+                          StreamBuilder(
+                              stream: Firestore.instance
+                                  .collection("story")
+                                  .document(widget.docid.toString())
+                                  .collection("comment")
+                                  .orderBy("time", descending: true)
+                                  .snapshots(),
+                              builder: (context,
+                                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                                if (!snapshot.hasData)
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: GetDatasstory(snapshot));
+                              }),
+
+                          ////////
+                        ],
+                      ),
+                    ),
+                  )
                 ],
               );
             }));
+  }
+
+  GetDatasstory(AsyncSnapshot<QuerySnapshot> snapshot) {
+    return snapshot.data.documents
+        .map((doc) => Container(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.only(left: 10, right: 10),
+                    child: Row(
+                      children: <Widget>[
+                        StreamBuilder(
+                            stream: Firestore.instance
+                                .collection('user')
+                                .document(doc["userid"])
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return CircularProgressIndicator();
+                              }
+                              var userDocument = snapshot.data;
+                              return CircleAvatar(
+                                  radius: 15,
+                                  backgroundColor: Color(0xffFDCF09),
+                                  child: (userDocument["photo"] != null)
+                                      ? CircleAvatar(
+                                          radius: 50,
+                                          backgroundImage: NetworkImage(
+                                              userDocument["photo"]),
+                                        )
+                                      : CircleAvatar(
+                                          radius: 50,
+                                          backgroundColor: Colors.blue[800],
+                                        ));
+                            }),
+                        Container(
+                            margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                StreamBuilder(
+                                    stream: Firestore.instance
+                                        .collection('user')
+                                        .document(doc["userid"])
+                                        .snapshots(),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData) {
+                                        return CircularProgressIndicator();
+                                      }
+                                      var userDocument = snapshot.data;
+                                      return Row(
+                                        children: <Widget>[
+                                          Text(
+                                            userDocument["name"],
+                                            style: TextStyle(
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.w600),
+                                          ),
+                                        ],
+                                      );
+                                    }),
+                                Text(
+                                  doc["create_at"],
+                                  style: TextStyle(fontSize: 10),
+                                ),
+                              ],
+                            )),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.all(10),
+                    child: Text(
+                      doc["comment"],
+                      textAlign: TextAlign.left,
+                      style:
+                          TextStyle(fontSize: 17, fontWeight: FontWeight.w400),
+                    ),
+                  ),
+                  Divider()
+                ],
+              ),
+            ))
+        .toList();
   }
 }

@@ -8,6 +8,7 @@ import 'package:failure/page/services/authentication.dart';
 import 'package:faker/faker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 
 class Profile extends StatefulWidget {
@@ -37,6 +38,7 @@ int click = 1;
   Future signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
+      await GoogleSignIn().signOut();
       widget.logoutCallback();
 
       setState(() {});

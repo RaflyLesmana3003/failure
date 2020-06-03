@@ -1,6 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:failure/model/story.dart';
-import 'package:failure/page/home/story.dart';
 import 'package:failure/page/story/add_story.dart';
 import 'package:failure/page/story/viewstory.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,12 +21,12 @@ class SlideRightRoute extends PageRouteBuilder {
             Widget child,
           ) =>
               SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 1),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
-              ),
+            position: Tween<Offset>(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
         );
 }
 
@@ -39,7 +37,7 @@ class YourStory extends StatefulWidget {
 
 class _YourStoryState extends State<YourStory> {
   String uid;
-@override
+  @override
   void user() async {
     var firebaseUser = await FirebaseAuth.instance.currentUser();
     if (firebaseUser != null) {
@@ -48,10 +46,11 @@ class _YourStoryState extends State<YourStory> {
       });
     }
   }
+
   @override
   Widget build(BuildContext context) {
     user();
-  
+
     return MaterialApp(
       theme: ThemeData(primaryColor: Colors.pinkAccent[400]),
       home: Scaffold(
@@ -87,9 +86,7 @@ class _YourStoryState extends State<YourStory> {
                 stream: Firestore.instance
                     .collection("story")
                     .orderBy("created_at", descending: true)
-                    .where("useruid",
-                        isEqualTo: uid.toString()
-                        )
+                    .where("useruid", isEqualTo: uid.toString())
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (!snapshot.hasData)
@@ -104,7 +101,8 @@ class _YourStoryState extends State<YourStory> {
     return snapshot.data.documents
         .map((doc) => GestureDetector(
               onTap: () {
-                Navigator.push(context, SlideRightRoute(page:ViewStory(doc.documentID)));
+                Navigator.push(
+                    context, SlideRightRoute(page: ViewStory(doc.documentID)));
 
                 // Navigator.push(context, MaterialPageRoute(builder: (context) {
                 //   return ViewStory(doc.documentID);
@@ -234,7 +232,21 @@ class _YourStoryState extends State<YourStory> {
                                     Icons.chat_bubble_outline,
                                     size: 15,
                                   ),
-                                  Text(" 1000")
+                                  StreamBuilder(
+                                      stream: Firestore.instance
+                                          .collection("story")
+                                          .document(doc.documentID)
+                                          .collection("comment")
+                                          .snapshots(),
+                                      builder: (context, snapshot) {
+                                        if (!snapshot.hasData)
+                                          return const Center();
+                                        // print(snapshot.data.documents.length
+                                        //     .toString());
+                                        return Text(snapshot
+                                            .data.documents.length
+                                            .toString());
+                                      }),
                                 ],
                               ),
                             ],

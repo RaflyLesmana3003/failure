@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:failure/page/home/story.dart';
 import 'package:failure/page/story/viewstory.dart';
 import 'package:flutter/material.dart';
 

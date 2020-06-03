@@ -1,15 +1,14 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:faker/faker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:zefyr/zefyr.dart';
 
 class UserModel {
+  final FirebaseMessaging _fcm = FirebaseMessaging();
   Future<String> Usercreate(
       {String name,
       int anonymname,
@@ -26,6 +25,7 @@ class UserModel {
       StorageTaskSnapshot snapshot = await task.onComplete;
       imageurl = await snapshot.ref.getDownloadURL();
     }
+    String fcmToken = await _fcm.getToken();
     var firebaseUser = await FirebaseAuth.instance.currentUser();
     var now = new DateTime.now();
     var formatter = new DateFormat('yyyy-MM-dd');
@@ -51,6 +51,27 @@ class UserModel {
           'isanonym': (isanonym == null) ? 1 : 0,
           'photo': (imageurl != null) ? imageurl : null,
         });
+        await Firestore.instance
+            .collection('user')
+            .document(firebaseUser.uid)
+            .collection("tokens")
+            .document(fcmToken)
+            .setData({
+          'token': fcmToken,
+          'created_at': FieldValue.serverTimestamp(),
+          'Platform': Platform.operatingSystem
+        });
+      } else {
+        await Firestore.instance
+            .collection('user')
+            .document(firebaseUser.uid)
+            .collection("tokens")
+            .document(fcmToken)
+            .setData({
+          'token': fcmToken,
+          'created_at': FieldValue.serverTimestamp(),
+          'Platform': Platform.operatingSystem
+        });
       }
     });
   }
@@ -63,13 +84,12 @@ class UserModel {
       String image,
       File photo}) async {
     String imageurl;
-    var faker = new Faker();
 
     if (photo != null) {
-      
       if (image != null) {
-        StorageReference delref = await FirebaseStorage().getReferenceFromUrl(image);
-      await delref.delete();
+        StorageReference delref =
+            await FirebaseStorage().getReferenceFromUrl(image);
+        await delref.delete();
       }
       String imageName = basename(photo.path);
       StorageReference ref = FirebaseStorage.instance.ref().child(imageName);
@@ -78,9 +98,6 @@ class UserModel {
       imageurl = await snapshot.ref.getDownloadURL();
     }
     var firebaseUser = await FirebaseAuth.instance.currentUser();
-    var now = new DateTime.now();
-    var formatter = new DateFormat('yyyy-MM-dd');
-    String formatted = formatter.format(now);
     Firestore.instance
         .collection("user")
         .document(firebaseUser.uid)
